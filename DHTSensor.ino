@@ -56,7 +56,30 @@ byte customCharCentigrade[8] = {
   0b01000,
   0b01000,
   0b00100,
-  0b00011,
+  0b00011
+};
+
+byte customCharWaterDroplet[8] = {
+  0b00100,
+  0b00100,
+  0b01010,
+  0b01010,
+  0b10001,
+  0b10001,
+  0b01110,
+  0b00000
+};
+
+
+byte customCharThermometer[8] = {
+  0b00100,
+  0b01010,
+  0b01010,
+  0b01010,
+  0b01010,
+  0b10001,
+  0b10001,
+  0b01110
 };
 
 void setup() {
@@ -65,6 +88,8 @@ void setup() {
   lcd.begin(16, 2);
   lcd.createChar(0, customConfidenceIntervalChar);
   lcd.createChar(1, customCharCentigrade);
+  lcd.createChar(2, customCharWaterDroplet);
+  lcd.createChar(3, customCharThermometer);
   
 //  Serial.begin(9600);
 //  Serial.println(F("DHTxx test!"));
@@ -93,7 +118,10 @@ void loop() {
   float hic = dht.computeHeatIndex(tRaw, hRaw, false);
 
   
-  //------------------------------------------------------
+
+  /******************************************************/
+  /*********************  Humidity  *********************/
+  /******************************************************/
 
   int h(hRaw);
   
@@ -108,12 +136,15 @@ void loop() {
 //  Serial.print(" )");
 //  
   lcd.setCursor(0, 0);
-  lcd.print(h);
-  lcd.print("   %  ");
+  lcd.write((byte)2);
+  lcd.print(" " + String(h) + "   %  ");
   lcd.write((byte)0);
   lcd.print(" "+String(5));
   
-  //------------------------------------------------------
+
+  /*******************************************************/
+  /********************* Temperature *********************/
+  /*******************************************************/
 
   String t(float(int(tRaw*10))/10,1);
   
@@ -133,8 +164,8 @@ void loop() {
 //  Serial.println(F("°C "));
 
   lcd.setCursor(0, 1);
-  lcd.print(t);
-  lcd.print(" ");
+  lcd.write((byte)3);
+  lcd.print(" " + String(t) + " ");
   lcd.write((byte)1);
   lcd.print("  ");
   lcd.write((byte)0);
