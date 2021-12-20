@@ -66,8 +66,8 @@ void setup() {
   lcd.createChar(0, customConfidenceIntervalChar);
   lcd.createChar(1, customCharCentigrade);
   
-  Serial.begin(9600);
-  Serial.println(F("DHTxx test!"));
+//  Serial.begin(9600);
+//  Serial.println(F("DHTxx test!"));
 
   dht.begin();
 }
@@ -78,58 +78,59 @@ void loop() {
 
   // Reading temperature or humidity takes about 250 milliseconds!
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-  float hRead = dht.readHumidity();
+  float hRaw = dht.readHumidity();
   // Read temperature as Celsius (the default)
-  float t= dht.readTemperature();
+  float tRaw= dht.readTemperature();
 
   // Check if any reads failed and exit early (to try again).
-  if (isnan(hRead) || isnan(t)) {
-    Serial.println(F("Failed to read from DHT sensor!"));
+  if (isnan(hRaw) || isnan(tRaw)) {
+//    Serial.println(F("Failed to read from DHT sensor!"));
+    lcd.print(F("Failed to read from DHT sensor!"));
     return;
   }
 
   // Compute heat index in Celsius (isFahreheit = false)
-  float hic = dht.computeHeatIndex(t, hRead, false);
+  float hic = dht.computeHeatIndex(tRaw, hRaw, false);
 
   
   //------------------------------------------------------
 
-  int h=int(hRead);
+  int h(hRaw);
   
-  Serial.print(F("Humidity: "));
-  Serial.print(h);
-  Serial.print("% ");
-  
-  Serial.print("( ");
-  Serial.print(h-5);
-  Serial.print(" - ");
-  Serial.print(h+5);
-  Serial.print(" )");
-  
+//  Serial.print(F("Humidity: "));
+//  Serial.print(h);
+//  Serial.print("% ");
+//  
+//  Serial.print("( ");
+//  Serial.print(h-5);
+//  Serial.print(" - ");
+//  Serial.print(h+5);
+//  Serial.print(" )");
+//  
   lcd.setCursor(0, 0);
   lcd.print(h);
-  lcd.print(" %  ");
+  lcd.print("   %  ");
   lcd.write((byte)0);
   lcd.print(" "+String(5));
   
   //------------------------------------------------------
 
-  t = float(int(t*10))/10;
+  String t(float(int(tRaw*10))/10,1);
   
-  Serial.print(F(" Temperature: "));
-  Serial.print(t);
-  Serial.print(F("°C "));
+//  Serial.print(F(" Temperature: "));
+//  Serial.print(t);
+//  Serial.print(F("°C "));
+//  
+//  Serial.print("( ");
+//  Serial.print(t-2);
+//  Serial.print(" - ");
+//  Serial.print(t+2);
+//  Serial.print(" )");
   
-  Serial.print("( ");
-  Serial.print(t-2);
-  Serial.print(" - ");
-  Serial.print(t+2);
-  Serial.print(" )");
-  
-  Serial.print(F(" Heat index: "));
-  
-  Serial.print(hic);
-  Serial.println(F("°C "));
+//  Serial.print(F(" Heat index: "));
+//  
+//  Serial.print(hic);
+//  Serial.println(F("°C "));
 
   lcd.setCursor(0, 1);
   lcd.print(t);
