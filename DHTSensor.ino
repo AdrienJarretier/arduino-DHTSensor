@@ -95,7 +95,9 @@ byte customCharFullSquare[8] = {
 
 const int SCREEN_WIDTH = 16;
 
-const int RAW_READS_LENGTH = 17;
+const int SAMPLING_PERIOD = 1000; // ms
+
+const int RAW_READS_LENGTH = 8;
 // the different measurements done each time we read from the sensor,
 // ex : humidity and temperature makes 2
 const int MEASUREMENTS_COUNT = 2;
@@ -149,6 +151,24 @@ void readSensor() {
   }
 }
 
+void initReads() {
+  lcd.setCursor(0, 0);
+  lcd.print(F("Initialising"));
+  lcd.setCursor(0, 1);
+
+  float progress = 0.0f;
+
+  for (int i = 0; i < RAW_READS_LENGTH; ++i) {
+    delay(SAMPLING_PERIOD);
+    readSensor();
+    progress += float(SCREEN_WIDTH + 1) / float(RAW_READS_LENGTH);
+    while (progress >= 1) {
+      lcd.write((byte)4);
+      progress -= 1.0f;
+    }
+  }
+}
+
 void setup() {
 
   initVariables();
@@ -166,21 +186,9 @@ void setup() {
 
   dht.begin();
 
-  lcd.setCursor(0, 0);
-  lcd.print(F("Initialising"));
-  lcd.setCursor(0, 1);
+  initReads();
 
-  float progress = 0.0f;
-
-  for (int i = 0; i < RAW_READS_LENGTH; ++i) {
-    delay(1000);
-    readSensor();
-    progress += float(SCREEN_WIDTH + 1) / float(RAW_READS_LENGTH);
-    while (progress >= 1) {
-      lcd.write((byte)4);
-      progress -= 1.0f;
-    }
-  }
+  lcd.clear();
 
 }
 
@@ -223,7 +231,7 @@ void loop() {
   lcd.print(" " + String(2));
 
   //------------------------------------------------------
-  delay(2000);
+  delay(SAMPLING_PERIOD);
   readSensor();
 
 }
