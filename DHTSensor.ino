@@ -114,9 +114,6 @@ void loop() {
     return;
   }
 
-  // Compute heat index in Celsius (isFahreheit = false)
-  float hic = dht.computeHeatIndex(tRaw, hRaw, false);
-
   
 
   /******************************************************/
@@ -125,16 +122,6 @@ void loop() {
 
   int h(hRaw);
   
-//  Serial.print(F("Humidity: "));
-//  Serial.print(h);
-//  Serial.print("% ");
-//  
-//  Serial.print("( ");
-//  Serial.print(h-5);
-//  Serial.print(" - ");
-//  Serial.print(h+5);
-//  Serial.print(" )");
-//  
   lcd.setCursor(0, 0);
   lcd.write((byte)2);
   lcd.print(" " + String(h) + "   %  ");
@@ -147,21 +134,6 @@ void loop() {
   /*******************************************************/
 
   String t(float(int(tRaw*10))/10,1);
-  
-//  Serial.print(F(" Temperature: "));
-//  Serial.print(t);
-//  Serial.print(F("°C "));
-//  
-//  Serial.print("( ");
-//  Serial.print(t-2);
-//  Serial.print(" - ");
-//  Serial.print(t+2);
-//  Serial.print(" )");
-  
-//  Serial.print(F(" Heat index: "));
-//  
-//  Serial.print(hic);
-//  Serial.println(F("°C "));
 
   lcd.setCursor(0, 1);
   lcd.write((byte)3);
