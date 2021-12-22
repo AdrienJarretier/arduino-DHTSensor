@@ -82,7 +82,74 @@ byte customCharThermometer[8] = {
   0b01110
 };
 
+byte customCharFullSquare[8] = {
+  0b11111,
+  0b11111,
+  0b11111,
+  0b11111,
+  0b11111,
+  0b11111,
+  0b11111,
+  0b11111
+};
+
+const int RAW_READS_LENGTH = 1;
+// the different measurements done each time we read from the sensor,
+// ex : humidity and temperature makes 2
+const int MEASUREMENTS_COUNT = 2;
+
+float rawSensorReads[RAW_READS_LENGTH][MEASUREMENTS_COUNT];
+
+
+float sumOfReads[MEASUREMENTS_COUNT];
+
+void initVariables() {
+
+  for (int i = 0; i < RAW_READS_LENGTH; ++i) {
+    for (int j = 0; j < MEASUREMENTS_COUNT; ++j) {
+      rawSensorReads[i][j] = 0.0f;
+    }
+  }
+
+  for (int j = 0; j < MEASUREMENTS_COUNT; ++j) {
+    sumOfReads[j] = 0.0f;
+  }
+}
+
+void readSensor() {
+
+  for (int j = 0; j < MEASUREMENTS_COUNT; ++j) {
+    sumOfReads[j] -= rawSensorReads[0][j];
+  }
+  for (int i = 0; i < RAW_READS_LENGTH - 1; ++i) {
+    for (int j = 0; j < MEASUREMENTS_COUNT; ++j) {
+      rawSensorReads[i][j] = rawSensorReads[i + 1][j];
+    }
+  }
+
+  // Reading temperature or humidity takes about 250 milliseconds!
+  // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
+  rawSensorReads[RAW_READS_LENGTH - 1][0] = dht.readHumidity();
+
+  // Read temperature as Celsius (the default)
+  rawSensorReads[RAW_READS_LENGTH - 1][1] = dht.readTemperature();
+
+  // Check if any reads failed and exit early (to try again).
+  for (int i = 0; i < MEASUREMENTS_COUNT; ++i) {
+    if (isnan(rawSensorReads[RAW_READS_LENGTH - 1][i])) {
+      lcd.print(F("Failed to read from DHT sensor!"));
+      return;
+    }
+  }
+
+  for (int j = 0; j < MEASUREMENTS_COUNT; ++j) {
+    sumOfReads[j] += rawSensorReads[RAW_READS_LENGTH - 1][j];
+  }
+}
+
 void setup() {
+
+  initVariables();
 
   // set up the LCD's number of columns and rows:
   lcd.begin(16, 2);
@@ -90,37 +157,41 @@ void setup() {
   lcd.createChar(1, customCharCentigrade);
   lcd.createChar(2, customCharWaterDroplet);
   lcd.createChar(3, customCharThermometer);
+  lcd.createChar(4, customCharFullSquare);
 
-  //  Serial.begin(9600);
+  Serial.begin(9600);
   //  Serial.println(F("DHTxx test!"));
 
   dht.begin();
+
+  lcd.setCursor(0, 0);
+  lcd.print(F("Initialising"));
+  lcd.setCursor(0, 1);
+
+  float progress = 0.0f;
+
+  for (int i = 0; i < RAW_READS_LENGTH; ++i) {
+    delay(300);
+    readSensor();
+    progress += 16.0f / float(RAW_READS_LENGTH);
+    while(progress >= 1) {
+      lcd.write((byte)4);
+      progress -= 1.0f;
+    }
+  }
+
 }
 
 void loop() {
-  // Wait a few seconds between measurements.
-  delay(2000);
-
-  // Reading temperature or humidity takes about 250 milliseconds!
-  // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-  float hRaw = dht.readHumidity();
-  // Read temperature as Celsius (the default)
-  float tRaw = dht.readTemperature();
-
-  // Check if any reads failed and exit early (to try again).
-  if (isnan(hRaw) || isnan(tRaw)) {
-    //    Serial.println(F("Failed to read from DHT sensor!"));
-    lcd.print(F("Failed to read from DHT sensor!"));
-    return;
-  }
-
-
 
   /******************************************************/
   /*********************  Humidity  *********************/
   /******************************************************/
 
+  float hRaw = sumOfReads[0] / float(RAW_READS_LENGTH);
   int h(hRaw);
+
+  lcd.clear();
 
   lcd.setCursor(0, 0);
   lcd.write((byte)2);
@@ -133,6 +204,11 @@ void loop() {
   /********************* Temperature *********************/
   /*******************************************************/
 
+  Serial.print(sumOfReads[0]);
+  Serial.print(',');
+  Serial.println(sumOfReads[1]);
+
+  float tRaw = sumOfReads[1] / float(RAW_READS_LENGTH);
   String t(float(int(tRaw * 10)) / 10, 1);
 
   lcd.setCursor(0, 1);
@@ -144,5 +220,7 @@ void loop() {
   lcd.print(" " + String(2));
 
   //------------------------------------------------------
+  delay(2000);
+  readSensor();
 
 }
