@@ -93,7 +93,9 @@ byte customCharFullSquare[8] = {
   0b11111
 };
 
-const int RAW_READS_LENGTH = 1;
+const int SCREEN_WIDTH = 16;
+
+const int RAW_READS_LENGTH = 17;
 // the different measurements done each time we read from the sensor,
 // ex : humidity and temperature makes 2
 const int MEASUREMENTS_COUNT = 2;
@@ -171,10 +173,10 @@ void setup() {
   float progress = 0.0f;
 
   for (int i = 0; i < RAW_READS_LENGTH; ++i) {
-    delay(300);
+    delay(1000);
     readSensor();
-    progress += 16.0f / float(RAW_READS_LENGTH);
-    while(progress >= 1) {
+    progress += float(SCREEN_WIDTH + 1) / float(RAW_READS_LENGTH);
+    while (progress >= 1) {
       lcd.write((byte)4);
       progress -= 1.0f;
     }
@@ -191,11 +193,13 @@ void loop() {
   float hRaw = sumOfReads[0] / float(RAW_READS_LENGTH);
   int h(hRaw);
 
-  lcd.clear();
-
   lcd.setCursor(0, 0);
   lcd.write((byte)2);
-  lcd.print(" " + String(h) + "   %  ");
+  lcd.print(F("    "));
+  lcd.setCursor(2, 0);
+  lcd.print(h);
+  lcd.setCursor(7, 0);
+  lcd.print(F("%  "));
   lcd.write((byte)0);
   lcd.print(" " + String(5));
 
@@ -204,16 +208,15 @@ void loop() {
   /********************* Temperature *********************/
   /*******************************************************/
 
-  Serial.print(sumOfReads[0]);
-  Serial.print(',');
-  Serial.println(sumOfReads[1]);
-
   float tRaw = sumOfReads[1] / float(RAW_READS_LENGTH);
   String t(float(int(tRaw * 10)) / 10, 1);
 
   lcd.setCursor(0, 1);
   lcd.write((byte)3);
-  lcd.print(" " + String(t) + " ");
+  lcd.print(F("     "));
+  lcd.setCursor(2, 1);
+  lcd.print(t);
+  lcd.setCursor(7, 1);
   lcd.write((byte)1);
   lcd.print("  ");
   lcd.write((byte)0);
