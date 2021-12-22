@@ -90,9 +90,9 @@ void setup() {
   lcd.createChar(1, customCharCentigrade);
   lcd.createChar(2, customCharWaterDroplet);
   lcd.createChar(3, customCharThermometer);
-  
-//  Serial.begin(9600);
-//  Serial.println(F("DHTxx test!"));
+
+  //  Serial.begin(9600);
+  //  Serial.println(F("DHTxx test!"));
 
   dht.begin();
 }
@@ -105,35 +105,35 @@ void loop() {
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
   float hRaw = dht.readHumidity();
   // Read temperature as Celsius (the default)
-  float tRaw= dht.readTemperature();
+  float tRaw = dht.readTemperature();
 
   // Check if any reads failed and exit early (to try again).
   if (isnan(hRaw) || isnan(tRaw)) {
-//    Serial.println(F("Failed to read from DHT sensor!"));
+    //    Serial.println(F("Failed to read from DHT sensor!"));
     lcd.print(F("Failed to read from DHT sensor!"));
     return;
   }
 
-  
+
 
   /******************************************************/
   /*********************  Humidity  *********************/
   /******************************************************/
 
   int h(hRaw);
-  
+
   lcd.setCursor(0, 0);
   lcd.write((byte)2);
   lcd.print(" " + String(h) + "   %  ");
   lcd.write((byte)0);
-  lcd.print(" "+String(5));
-  
+  lcd.print(" " + String(5));
+
 
   /*******************************************************/
   /********************* Temperature *********************/
   /*******************************************************/
 
-  String t(float(int(tRaw*10))/10,1);
+  String t(float(int(tRaw * 10)) / 10, 1);
 
   lcd.setCursor(0, 1);
   lcd.write((byte)3);
@@ -141,7 +141,7 @@ void loop() {
   lcd.write((byte)1);
   lcd.print("  ");
   lcd.write((byte)0);
-  lcd.print(" "+String(2));
+  lcd.print(" " + String(2));
 
   //------------------------------------------------------
 
