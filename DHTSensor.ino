@@ -97,19 +97,19 @@ const int SCREEN_WIDTH = 16;
 
 const int SAMPLING_PERIOD = 1000; // ms
 
-const int RAW_READS_LENGTH = 8;
+const int RAW_READS_WINDOW_SIZE = 8;
 // the different measurements done each time we read from the sensor,
 // ex : humidity and temperature makes 2
 const int MEASUREMENTS_COUNT = 2;
 
-float rawSensorReads[RAW_READS_LENGTH][MEASUREMENTS_COUNT];
+float rawSensorReads[RAW_READS_WINDOW_SIZE][MEASUREMENTS_COUNT];
 
 
 float sumOfReads[MEASUREMENTS_COUNT];
 
 void initVariables() {
 
-  for (int i = 0; i < RAW_READS_LENGTH; ++i) {
+  for (int i = 0; i < RAW_READS_WINDOW_SIZE; ++i) {
     for (int j = 0; j < MEASUREMENTS_COUNT; ++j) {
       rawSensorReads[i][j] = 0.0f;
     }
@@ -125,7 +125,7 @@ void readSensor() {
   for (int j = 0; j < MEASUREMENTS_COUNT; ++j) {
     sumOfReads[j] -= rawSensorReads[0][j];
   }
-  for (int i = 0; i < RAW_READS_LENGTH - 1; ++i) {
+  for (int i = 0; i < RAW_READS_WINDOW_SIZE - 1; ++i) {
     for (int j = 0; j < MEASUREMENTS_COUNT; ++j) {
       rawSensorReads[i][j] = rawSensorReads[i + 1][j];
     }
@@ -133,21 +133,21 @@ void readSensor() {
 
   // Reading temperature or humidity takes about 250 milliseconds!
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-  rawSensorReads[RAW_READS_LENGTH - 1][0] = dht.readHumidity();
+  rawSensorReads[RAW_READS_WINDOW_SIZE - 1][0] = dht.readHumidity();
 
   // Read temperature as Celsius (the default)
-  rawSensorReads[RAW_READS_LENGTH - 1][1] = dht.readTemperature();
+  rawSensorReads[RAW_READS_WINDOW_SIZE - 1][1] = dht.readTemperature();
 
   // Check if any reads failed and exit early (to try again).
   for (int i = 0; i < MEASUREMENTS_COUNT; ++i) {
-    if (isnan(rawSensorReads[RAW_READS_LENGTH - 1][i])) {
+    if (isnan(rawSensorReads[RAW_READS_WINDOW_SIZE - 1][i])) {
       lcd.print(F("Failed to read from DHT sensor!"));
       return;
     }
   }
 
   for (int j = 0; j < MEASUREMENTS_COUNT; ++j) {
-    sumOfReads[j] += rawSensorReads[RAW_READS_LENGTH - 1][j];
+    sumOfReads[j] += rawSensorReads[RAW_READS_WINDOW_SIZE - 1][j];
   }
 }
 
@@ -158,10 +158,10 @@ void initReads() {
 
   float progress = 0.0f;
 
-  for (int i = 0; i < RAW_READS_LENGTH; ++i) {
+  for (int i = 0; i < RAW_READS_WINDOW_SIZE; ++i) {
     delay(SAMPLING_PERIOD);
     readSensor();
-    progress += float(SCREEN_WIDTH + 1) / float(RAW_READS_LENGTH);
+    progress += float(SCREEN_WIDTH + 1) / float(RAW_READS_WINDOW_SIZE);
     while (progress >= 1) {
       lcd.write((byte)4);
       progress -= 1.0f;
@@ -198,7 +198,7 @@ void loop() {
   /*********************  Humidity  *********************/
   /******************************************************/
 
-  float hRaw = sumOfReads[0] / float(RAW_READS_LENGTH);
+  float hRaw = sumOfReads[0] / float(RAW_READS_WINDOW_SIZE);
   int h(hRaw);
 
   lcd.setCursor(0, 0);
@@ -216,7 +216,7 @@ void loop() {
   /********************* Temperature *********************/
   /*******************************************************/
 
-  float tRaw = sumOfReads[1] / float(RAW_READS_LENGTH);
+  float tRaw = sumOfReads[1] / float(RAW_READS_WINDOW_SIZE);
   String t(float(int(tRaw * 10)) / 10, 1);
 
   lcd.setCursor(0, 1);
