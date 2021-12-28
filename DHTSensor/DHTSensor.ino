@@ -13,6 +13,7 @@
 // with the arduino pin number it is connected to
 const int rs = 12, en = 11, d4 = 7, d5 = 6, d6 = 5, d7 = 4;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+const int BACkLIGHT_CONTROL_PIN = 10;
 
 #define DHTPIN 2     // Digital pin connected to the DHT sensor
 // Feather HUZZAH ESP8266 note: use pins 3, 4, 5, 12, 13 or 14 --
@@ -93,6 +94,8 @@ byte customCharFullSquare[8] = {
   0b11111
 };
 
+const int INIT_TIME_SEC = 20;
+
 const int SCREEN_WIDTH = 16;
 
 const int SAMPLING_PERIOD = 1000; // ms
@@ -156,20 +159,26 @@ void initReads() {
   lcd.print(F("Initialising"));
   lcd.setCursor(0, 1);
 
-  float progress = 0.0f;
+  const int DELAY_STEP = (INIT_TIME_SEC * 1000) / (SCREEN_WIDTH + 1);
+  for (int i = 0; i < SCREEN_WIDTH + 1; ++i) {
+    delay( DELAY_STEP );
+    lcd.write((byte)4);
+  }
 
   for (int i = 0; i < RAW_READS_WINDOW_SIZE; ++i) {
-    delay(SAMPLING_PERIOD);
     readSensor();
-    progress += float(SCREEN_WIDTH + 1) / float(RAW_READS_WINDOW_SIZE);
-    while (progress >= 1) {
-      lcd.write((byte)4);
-      progress -= 1.0f;
-    }
   }
+
 }
 
 void setup() {
+
+  pinMode(13, OUTPUT);
+  digitalWrite(13, 0);
+
+  pinMode(BACkLIGHT_CONTROL_PIN, OUTPUT);
+  digitalWrite(BACkLIGHT_CONTROL_PIN, 1);
+
 
   initVariables();
 
